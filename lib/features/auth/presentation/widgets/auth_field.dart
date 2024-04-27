@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:reuseify_app/core/theme/app_pallete.dart';
 
-class AuthField extends StatelessWidget {
+class AuthField extends StatefulWidget {
   final String hintText;
   final TextEditingController controller;
   final bool isObscureText;
@@ -14,20 +15,50 @@ class AuthField extends StatelessWidget {
   });
 
   @override
+  State<AuthField> createState() => _AuthFieldState();
+}
+
+class _AuthFieldState extends State<AuthField> {
+  void togglePasswordView() {
+    setState(() {
+      _passwordHidden = !_passwordHidden;
+    });
+  }
+
+  bool _passwordHidden = true;
+
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
-      controller: controller,
+      controller: widget.controller,
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: widget.hintText,
+        suffixIcon: widget.isObscureText
+            ? Padding(
+                padding: const EdgeInsets.only(right: 10.0),
+                child: IconButton(
+                  onPressed: togglePasswordView,
+                  icon: _passwordHidden
+                      ? const Icon(
+                          Icons.visibility,
+                          color: AppPallete.tertiaryColor,
+                        )
+                      : const Icon(
+                          Icons.visibility_off,
+                          color: AppPallete.tertiaryColor,
+                        ),
+                ),
+              )
+            : null,
       ),
-      validator: validator ??
+      validator: widget.validator ??
           (value) {
             if (value!.isEmpty) {
-              return "$hintText is missing!";
+              return "${widget.hintText} is missing!";
             }
             return null;
           },
-      obscureText: isObscureText,
+      obscureText: widget.isObscureText && _passwordHidden,
     );
   }
 }

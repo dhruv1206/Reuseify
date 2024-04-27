@@ -13,8 +13,9 @@ abstract interface class AuthRemoteDataSource {
 
   Future<UserModel> loginWithEmailPassword(String email, String password);
   Future<UserModel> signupWithEmailPassword(
-      String username, String email, String password);
+      String fullName, String email, String password);
   Future<UserModel?> getCurrentUserData();
+  Future<void> logoutUser();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -30,13 +31,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           body: {'email': email, 'password': password});
       if (response.statusCode == HttpStatus.ok) {
         _localStorageRepo.setString(
-            LocalStorageKeys.userTokenKey, response.data['access_token']);
-        return UserModel(id: "", username: "", email: email);
+            LocalStorageKeys.userTokenKey, response.data['accessToken']);
+        return UserModel.fromJson(response.data['user']);
       }
-      throw "Something went wrong!";
+      throw response.message ?? "Something went wrong!";
     } on DioException catch (e) {
       throw ServerException(
-        e.response?.data['msg'] ?? "",
+        e.response?.data['message'] ?? "",
         statusCode: e.response?.statusCode ?? 0,
       );
     } catch (e) {
@@ -49,22 +50,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<UserModel> signupWithEmailPassword(
-      String username, String email, String password) async {
+      String fullName, String email, String password) async {
     try {
       final response = await _apiClientRepo.post(
         ApiEndpoints.signup,
-        body: {'username': username, 'email': email, 'password': password},
+        body: {'full_name': fullName, 'email': email, 'password': password},
       );
-      if (response.statusCode == HttpStatus.ok) {
+      if (response.statusCode == HttpStatus.created) {
         _localStorageRepo.setString(
-            LocalStorageKeys.userTokenKey, response.data['access_token']);
+            LocalStorageKeys.userTokenKey, response.data['accessToken']);
 
-        return UserModel.fromJson(response.data);
+        return UserModel.fromJson(response.data['user']);
       }
-      throw "Something went wrong!";
+      throw response.message ?? "Something went wrong!";
     } on DioException catch (e) {
       throw ServerException(
-        e.response?.data['msg'] ?? "",
+        e.response?.data['message'] ?? "",
         statusCode: e.response?.statusCode ?? 0,
       );
     } catch (e) {
@@ -81,7 +82,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (userToken != null && userToken!.isNotEmpty) {
         final response = await _apiClientRepo.get(ApiEndpoints.getUserData);
         if (response.statusCode == HttpStatus.ok) {
-          return UserModel.fromJson(response.data);
+          return UserModel.fromJson(response.data['user']);
         }
       }
       return null;
@@ -93,4 +94,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   String? get userToken =>
       _localStorageRepo.getString(LocalStorageKeys.userTokenKey);
+
+  @override
+  Future<void> logoutUser() async {
+    try {
+      await _localStorageRepo.remove(LocalStorageKeys.userTokenKey);
+    } catch (e) {
+      throw ServerException(e.toString(), statusCode: HttpStatus.unknownError);
+    }
+  }
 }

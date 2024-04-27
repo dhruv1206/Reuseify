@@ -22,21 +22,25 @@ class AuthRepositoryImpl implements AuthRepository {
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message, e.statusCode));
+    } catch (e) {
+      return left(Failure('Something went wrong!'));
     }
   }
 
   @override
   Future<Either<Failure, User>> signupUser({
-    required String username,
+    required String fullName,
     required String email,
     required String password,
   }) async {
     try {
       UserModel user = await _authRemoteDataSource.signupWithEmailPassword(
-          username, email, password);
+          fullName, email, password);
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message, e.statusCode));
+    } catch (e) {
+      return left(Failure('Something went wrong!'));
     }
   }
 
@@ -50,6 +54,20 @@ class AuthRepositoryImpl implements AuthRepository {
       return right(user);
     } on ServerException catch (e) {
       return left(Failure(e.message, e.statusCode));
+    } catch (e) {
+      return left(Failure('Something went wrong!'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> logoutUser() async {
+    try {
+      await _authRemoteDataSource.logoutUser();
+      return right(null);
+    } on ServerException catch (e) {
+      return left(Failure(e.message, e.statusCode));
+    } catch (e) {
+      return left(Failure('Something went wrong!'));
     }
   }
 }
