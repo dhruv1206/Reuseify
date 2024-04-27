@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:reuseify_app/core/common/widgets/loader.dart';
 import 'package:reuseify_app/core/common/widgets/primary_button.dart';
 import 'package:reuseify_app/core/network/http_status.dart';
 import 'package:reuseify_app/core/theme/app_pallete.dart';
 import 'package:reuseify_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:reuseify_app/features/auth/presentation/pages/signup_page.dart';
 import 'package:reuseify_app/features/auth/presentation/widgets/auth_field.dart';
-import 'package:reuseify_app/home_screen.dart';
+
+import '../../../../core/utils/show_snackbar.dart';
 
 class LoginPage extends StatefulWidget {
   static route() => MaterialPageRoute(
@@ -31,6 +31,15 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  void navigateToSignUpScreen() {
+    Navigator.of(context).push(
+      SignUpPage.route(
+        email: emailController.text,
+        password: passwordController.text,
+      ),
+    );
+  }
+
   final RegExp _emailRegExp = RegExp(
     r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
   );
@@ -47,32 +56,20 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         automaticallyImplyLeading: false,
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppPallete.errorColor,
-              ),
-            );
+            showSnackBar(context, state.message,
+                backgroundColor: AppPallete.errorColor);
             if (state.statusCode == HttpStatus.notFound) {
-              Navigator.push(context, SignUpPage.route());
+              navigateToSignUpScreen();
             }
-          }
-          if (state is AuthSuccess) {
-            Navigator.of(context).pushAndRemoveUntil(
-              HomeScreen.route(),
-              (route) => false,
-            );
           }
         },
         builder: (context, state) {
-          if (state is AuthLoading) {
-            return const Loader();
-          }
           return Padding(
             padding: const EdgeInsets.all(15.0),
             child: Form(
@@ -102,7 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 20),
                   PrimaryButton(
-                    child: const Text('Sign in'),
+                    loading: state is AuthLoading,
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
                         context.read<AuthBloc>().add(
@@ -113,11 +110,12 @@ class _LoginPageState extends State<LoginPage> {
                             );
                       }
                     },
+                    child: const Text('Sign in'),
                   ),
                   const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, SignUpPage.route());
+                      navigateToSignUpScreen();
                     },
                     child: RichText(
                       text: TextSpan(

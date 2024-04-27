@@ -35,9 +35,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     final res = await _currentUser(NoParams());
-
     res.fold(
-      (l) => emit(AuthInitial()),
+      (l) {
+        _appUserCubit.updateUser(null);
+        emit(AuthInitial());
+      },
       (r) => _emitAuthSuccess(r, emit),
     );
   }

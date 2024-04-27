@@ -1,5 +1,5 @@
 class ApiEndpoints {
-  static const login = 'login';
-  static const signup = 'signup';
-  static const getUserData = "get-user-data";
+  static const login = 'user/auth/login';
+  static const signup = 'user/auth/signup';
+  static const getUserData = "user/auth/verify-user";
 }

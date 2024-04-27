@@ -15,7 +15,13 @@ class AppTheme {
         .apply(bodyColor: AppPallete.secondaryColor),
     scaffoldBackgroundColor: AppPallete.backgroundColor,
     appBarTheme: const AppBarTheme(
-      backgroundColor: AppPallete.backgroundColor,
+      backgroundColor: AppPallete.secondaryBackgroundColor,
+      centerTitle: true,
+      titleTextStyle: TextStyle(
+        color: AppPallete.backgroundColor,
+        fontWeight: FontWeight.bold,
+        fontSize: 20,
+      ),
     ),
     chipTheme: const ChipThemeData(
       color: MaterialStatePropertyAll(

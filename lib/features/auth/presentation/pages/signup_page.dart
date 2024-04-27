@@ -1,19 +1,22 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:reuseify_app/core/common/widgets/primary_button.dart';
 import 'package:reuseify_app/core/theme/app_pallete.dart';
-import 'package:reuseify_app/features/auth/presentation/pages/login_page.dart';
 import 'package:reuseify_app/features/auth/presentation/widgets/auth_field.dart';
-import 'package:reuseify_app/home_screen.dart';
 
 import '../../../../core/common/widgets/loader.dart';
+import '../../../../core/utils/show_snackbar.dart';
 import '../bloc/auth_bloc.dart';
 
 class SignUpPage extends StatefulWidget {
-  static route() => MaterialPageRoute(
-        builder: (context) => const SignUpPage(),
+  static route({email, password}) => CupertinoPageRoute(
+        builder: (context) => SignUpPage(email: email, password: password),
       );
-  const SignUpPage({super.key});
+
+  final String? email;
+  final String? password;
+  const SignUpPage({super.key, this.email = '', this.password = ''});
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
@@ -22,36 +25,47 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final nameController = TextEditingController();
+  final fullNameController = TextEditingController();
   final formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    emailController.text = widget.email!;
+    passwordController.text = widget.password!;
+  }
 
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-    nameController.dispose();
+    fullNameController.dispose();
     super.dispose();
+  }
+
+  final RegExp _emailRegExp = RegExp(
+    r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
+  );
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Email is required';
+    } else if (!_emailRegExp.hasMatch(value)) {
+      return 'Enter a valid email address';
+    }
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+      ),
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppPallete.errorColor,
-              ),
-            );
-          }
-          if (state is AuthSuccess) {
-            Navigator.of(context).pushAndRemoveUntil(
-              HomeScreen.route(),
-              (route) => false,
-            );
+            showSnackBar(context, state.message,
+                backgroundColor: AppPallete.errorColor);
           }
         },
         builder: (context, state) {
@@ -73,12 +87,13 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const Spacer(),
                   AuthField(
-                    hintText: 'Name',
-                    controller: nameController,
+                    hintText: 'Full Name',
+                    controller: fullNameController,
                   ),
                   const SizedBox(height: 15),
                   AuthField(
                     hintText: 'Email',
+                    validator: _validateEmail,
                     controller: emailController,
                   ),
                   const SizedBox(height: 15),
@@ -96,7 +111,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               AuthSignUp(
                                 email: emailController.text.trim(),
                                 password: passwordController.text.trim(),
-                                name: nameController.text.trim(),
+                                name: fullNameController.text.trim(),
                               ),
                             );
                       }
@@ -105,7 +120,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(context, LoginPage.route());
+                      Navigator.of(context).pop();
                     },
                     child: RichText(
                       text: TextSpan(

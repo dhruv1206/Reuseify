@@ -2,56 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:reuseify_app/core/common/widgets/loader.dart';
 import 'package:reuseify_app/core/theme/app_pallete.dart';
 
-class PrimaryButton extends StatefulWidget {
+class PrimaryButton extends StatelessWidget {
   final Widget? child;
   final Function()? onPressed;
-  final bool enableLoading;
+  final bool loading;
   final double? height;
   final double? width;
   const PrimaryButton(
       {super.key,
       this.child,
       this.onPressed,
-      this.enableLoading = false,
+      this.loading = false,
       this.height,
       this.width});
 
   @override
-  State<PrimaryButton> createState() => _PrimaryButtonState();
-}
-
-class _PrimaryButtonState extends State<PrimaryButton> {
-  bool _loading = false;
-
-  void toggleLoading() {
-    setState(() {
-      _loading = !_loading;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: widget.height ?? 60,
-      width: widget.width ?? MediaQuery.of(context).size.width * 0.9,
+      height: height ?? 60,
+      width: width ?? MediaQuery.of(context).size.width * 0.9,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           foregroundColor: AppPallete.secondaryColor,
           backgroundColor: AppPallete.primaryColor,
-          padding: EdgeInsets.all(_loading ? 10 : 18),
+          padding: EdgeInsets.all(loading ? 10 : 18),
         ),
-        onPressed: widget.onPressed != null
+        onPressed: onPressed != null
             ? () async {
-                if (_loading) {
+                if (loading) {
                   return;
                 }
-                if (widget.enableLoading) {
-                  toggleLoading();
-                }
-                await widget.onPressed!();
-                if (widget.enableLoading) {
-                  toggleLoading();
-                }
+                await onPressed!();
               }
             : null,
         child: AnimatedSwitcher(
@@ -71,10 +52,10 @@ class _PrimaryButtonState extends State<PrimaryButton> {
               ],
             );
           },
-          child: _loading
+          child: loading
               ? FittedBox(
                   child: Transform.scale(scale: 0.8, child: const Loader()))
-              : widget.child!,
+              : child!,
         ),
       ),
     );

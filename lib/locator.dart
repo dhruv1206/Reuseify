@@ -4,6 +4,7 @@ import 'package:reuseify_app/core/common/cubits/app_user/app_user_cubit.dart';
 import 'package:reuseify_app/core/network/api_client_repo.dart';
 import 'package:reuseify_app/core/network/connection_checker.dart';
 import 'package:reuseify_app/core/network/dio_api_client.dart';
+import 'package:reuseify_app/core/usecase/logout_user.dart';
 import 'package:reuseify_app/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:reuseify_app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:reuseify_app/features/auth/domain/repositories/auth_repository.dart';
@@ -17,16 +18,37 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 final locator = GetIt.instance;
 
 Future<void> initDependencies() async {
-  locator.registerLazySingleton<LocalStorageRepo>(() => SPLocalStorage());
-  locator.registerLazySingleton<AppUserCubit>(() => AppUserCubit());
+  _initAuth();
+  locator.registerLazySingleton<LocalStorageRepo>(
+    () => SPLocalStorage(),
+  );
+  locator.registerFactory<LogoutUser>(
+    () => LogoutUser(
+      locator(),
+    ),
+  );
+  locator.registerLazySingleton<AppUserCubit>(
+    () => AppUserCubit(
+      locator(),
+      locator(),
+    ),
+  );
 
   await locator<LocalStorageRepo>().init();
-  locator.registerFactory(() => InternetConnection());
+  locator.registerFactory(
+    () => InternetConnection(),
+  );
   locator.registerFactory<ConnectionChecker>(
-      () => ConnectionCheckerImpl(locator()));
+    () => ConnectionCheckerImpl(
+      locator(),
+    ),
+  );
   locator.registerLazySingleton<ApiClientRepo>(
-      () => DioApiClient(locator(), locator()));
-  _initAuth();
+    () => DioApiClient(
+      locator(),
+      locator(),
+    ),
+  );
 }
 
 void _initAuth() {

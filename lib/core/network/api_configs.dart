@@ -1,6 +1,6 @@
 class ApiConfigs {
   // Env Urls
-  static const String baseUrl = "https://server-6-tf1t.onrender.com/";
+  static const String baseUrl = "https://reusify-backend.onrender.com/";
 
   //Time out
   static const int connectTimeoutSeconds = 60 * 1000;

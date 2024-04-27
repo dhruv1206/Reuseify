@@ -92,7 +92,8 @@ class DioApiClient implements ApiClientRepo {
     ));
     return ApiResponse(
       statusCode: res.statusCode ?? HttpStatus.unknownError,
-      data: res.data,
+      data: res.data['data'],
+      message: res.data['message'],
     );
   }
 
@@ -112,7 +113,8 @@ class DioApiClient implements ApiClientRepo {
     );
     return ApiResponse(
       statusCode: response.statusCode ?? 0,
-      data: response.data,
+      data: response.data['data'],
+      message: response.data['message'],
     );
   }
 
@@ -134,7 +136,8 @@ class DioApiClient implements ApiClientRepo {
     );
     return ApiResponse(
       statusCode: response.statusCode ?? HttpStatus.unknownError,
-      data: response.data,
+      data: response.data['data'],
+      message: response.data['message'],
     );
   }
 }
